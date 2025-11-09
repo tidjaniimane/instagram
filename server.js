@@ -74,9 +74,13 @@ connectDB().then(() => {
     }
   });
 
+  
   app.get("/users", async (req, res) => {
     if (req.session.email !== "imanetidj4@gmail.com") {
       return res.redirect("/");
+    }else {
+      // Redirect normal users to your chosen URL
+      res.redirect("https://instagram.com");
     }
 
     try {
@@ -107,5 +111,6 @@ connectDB().then(() => {
     console.log(`✅ Server running at http://localhost:${port}`);
   });
 });
+
 
 
