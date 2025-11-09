@@ -7,7 +7,7 @@ const app = express();
 const port = 3000;
 
 // ✅ FIXED — added database name "security"
-const mongo_uri = `mongodb+srv://imanetidjani:yghcbv@cluster0.apc6t.mongodb.net/security?retryWrites=true&w=majority&appName=Cluster0`;
+const mongo_uri = process.env.MONGO_URI;
 
 let usersCollection;
 
@@ -107,4 +107,5 @@ connectDB().then(() => {
     console.log(`✅ Server running at http://localhost:${port}`);
   });
 });
+
 
