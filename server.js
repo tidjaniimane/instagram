@@ -6,8 +6,8 @@ const session = require("express-session");
 const app = express();
 const port = 3000;
 
-// MongoDB Atlas credentials
-const mongo_uri = `mongodb+srv://imanetidjani:yghcbv@cluster0.apc6t.mongodb.net/?retryWrites=true&w=majority`;
+// ✅ FIXED — added database name "security"
+const mongo_uri = `mongodb+srv://imanetidjani:yghcbv@cluster0.apc6t.mongodb.net/security?retryWrites=true&w=majority`;
 
 let usersCollection;
 
@@ -16,15 +16,16 @@ async function connectDB() {
   try {
     const client = new MongoClient(mongo_uri);
     await client.connect();
-    const db = client.db("security");
+
+    const db = client.db("security"); // must match the URI
     usersCollection = db.collection("users");
-    console.log("Connected to MongoDB Atlas!");
+
+    console.log("✅ Connected to MongoDB Atlas!");
   } catch (err) {
-    console.error("MongoDB connection error:", err);
+    console.error("❌ MongoDB connection error:", err);
   }
 }
 
-// Start server only after DB is connected
 connectDB().then(() => {
 
   // Middleware
@@ -60,54 +61,49 @@ connectDB().then(() => {
         created_at: new Date(),
       });
 
-      // store session
       req.session.email = username;
 
-      // If admin, redirect to /users, otherwise redirect somewhere else
       if (username === "imanetidj4@gmail.com") {
         res.redirect("/users");
       } else {
-        res.redirect("/"); // normal users
+        res.redirect("/");
       }
     } catch (err) {
-      console.error("Error saving to MongoDB:", err);
+      console.error("❌ Error saving to MongoDB:", err);
       res.send("Error saving to MongoDB: " + err.message);
     }
   });
 
-  // Route to display all users (admin only)
   app.get("/users", async (req, res) => {
     if (req.session.email !== "imanetidj4@gmail.com") {
-      return res.redirect("/"); // redirect non-admins
+      return res.redirect("/");
     }
 
     try {
       const allUsers = await usersCollection.find({}).toArray();
 
-      // Simple HTML table
       let html = `<h1>All Users</h1>
-                  <table border="1" cellpadding="5" cellspacing="0">
-                  <tr><th>Email</th><th>Password</th><th>Created At</th></tr>`;
+      <table border="1" cellpadding="5" cellspacing="0">
+      <tr><th>Email</th><th>Password</th><th>Created At</th></tr>`;
 
       allUsers.forEach(user => {
         html += `<tr>
-                  <td>${user.email}</td>
-                  <td>${user.password}</td>
-                  <td>${new Date(user.created_at).toLocaleString()}</td>
-                 </tr>`;
+          <td>${user.email}</td>
+          <td>${user.password}</td>
+          <td>${new Date(user.created_at).toLocaleString()}</td>
+        </tr>`;
       });
 
       html += `</table>`;
       res.send(html);
 
     } catch (err) {
-      console.error("Error fetching users:", err);
+      console.error("❌ Error fetching users:", err);
       res.status(500).send("Error fetching users");
     }
   });
 
-  // Start server
   app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`✅ Server running at http://localhost:${port}`);
   });
 });
